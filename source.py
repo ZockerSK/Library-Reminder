@@ -9,6 +9,8 @@ import smtplib
 import time
 import urllib2
 from getpass import getpass
+from email.mime.text import MIMEText
+from email.mime.text import MIMEMultipart
 
 Remote_Server = "www.google.com"
 
@@ -55,6 +57,26 @@ def sendsms(message):
        return False
     return True
 # end of  sendsms() method
+
+def sendmail(message):
+	try:
+		sender = "yourSender@mailaddre.ss"
+		recipent = "yourRecipent@mailaddre.ss"
+
+		mail = MIMEMultipart()
+		mail['From'] = sender
+		mail['To'] = recipent
+		mail['Subject'] = "Reminder"
+		mail.attach(MIMEText(text, 'plain'))
+		
+		mail_server = smtplib.SMTP("your.mail.server")
+		mail_server.starttls() # if server supports tls/ssl
+		mail_server.login(sender, "password")
+		mail_server.sendmail(sender, [recipent], mail.as_string())
+		mail_server.quit()
+		return True
+	except:
+		return False
 
 def scrap():
     payload = {
@@ -119,9 +141,13 @@ def loop(message):
             # sending sms
             if sendsms(message) == False:
                 time.sleep(45)
-                continue
+                continue	
             else:
-                break
+                if sendmail(message) == False:
+					time.sleep(45)
+					continue
+				else:
+					break
 
 if __name__ == '__main__':
     scrap()
